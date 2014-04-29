@@ -20,12 +20,14 @@ worker_main(int sockfd, char connect_script[]){
     int fd;
     int ret;
 
-    if((fd = dup2(sockfd, 4) < 0)){
-        fprintf(stderr, "Couldn't open file descriptor 4: %m");
-        syslog(LOG_ERR, "Couldn't open file descriptor 4: %m");
-        exit(EXIT_FAILURE);
+    if(sockfd >= 0){
+        if((fd = dup2(sockfd, 4) < 0)){
+            fprintf(stderr, "Couldn't open file descriptor 4: %m");
+            syslog(LOG_ERR, "Couldn't open file descriptor 4: %m");
+            exit(EXIT_FAILURE);
+        }
+        fcntl(fd, F_SETFD, 0);  /*  Not close on exec.  */
     }
-    fcntl(fd, F_SETFD, 0);  /*  Not close on exec.  */
 
     syslog(LOG_NOTICE, "executing %s", connect_script);
     closelog();

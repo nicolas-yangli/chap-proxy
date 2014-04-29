@@ -19,8 +19,13 @@
 #include <signal.h> 
 #include <syslog.h>
 
+#include "global.h"
 #include "daemon.h"
 #include "worker.h"
+
+int listenfd;
+int passivefd;
+char *connect_script;
 
 void sig_child(int signo);
 
@@ -29,14 +34,14 @@ main(int argc, char *argv[]){
     int detach = 0;
     char *listen = "/var/run/chap-proxy/socket";
     char *pidfile = "/var/run/chap-proxy/pidfile";
-    char *connect_script = NULL;
-    int listenfd;
+    char *passive = NULL;
     int sockfd;
     int pidfd;
     int pid;
     int opt;
 
-    while((opt = getopt(argc, argv, "l:c:dp:")) != -1){
+    connect_script = NULL;
+    while((opt = getopt(argc, argv, "l:c:dp:P:")) != -1){
         switch(opt){
             case 'l':
                 listen = strdup(optarg);
@@ -50,8 +55,11 @@ main(int argc, char *argv[]){
             case 'p':
                 pidfile = strdup(optarg);
                 break;
+            case 'P':
+                passive = strdup(optarg);
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-d] [-l LISTEN_SOCKET]\n",
+                fprintf(stderr, "Usage: %s [-d] [-l LISTEN_SOCKET] [-P PASSIVE_LISTEN_SOCKET] [-c CONNECT_SCRIPT]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -88,6 +96,12 @@ main(int argc, char *argv[]){
     listenfd = open_listen_socket(listen);
 
     set_signal_handler(SIGCHLD, sig_child);
+
+    if(passive){
+        passivefd = open_listen_socket(passive);
+        return passive_main();
+    }
+
     for(;;){
         if((sockfd = accept(listenfd, NULL, NULL)) < 0){
             switch(errno){
