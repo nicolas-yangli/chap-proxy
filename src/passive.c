@@ -145,7 +145,10 @@ worker_passive(int requestfd, int passivefd){
         }
 
         if(FD_ISSET(requestfd, &readset)){
-            if((nread = read(requestfd, buf, sizeof(buf))) < 0){
+            if((nread = read(requestfd, buf, sizeof(buf))) <= 0){
+                if(nread == 0){
+                    exit(0);
+                }   /*  else    */
                 switch(errno){
                     case EINTR:
                         continue;
@@ -158,7 +161,10 @@ worker_passive(int requestfd, int passivefd){
         }
 
         if(FD_ISSET(passivefd, &readset)){
-            if((nread = read(passivefd, buf, sizeof(buf))) < 0){
+            if((nread = read(passivefd, buf, sizeof(buf))) <= 0){
+                if(nread == 0){
+                    exit(0);
+                }   /*  else    */
                 switch(errno){
                     case EINTR:
                         continue;
