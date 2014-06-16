@@ -124,6 +124,8 @@ main(int argc, char *argv[]){
             closelog();
             openlog("chap-proxy", LOG_PID, LOG_DAEMON);
             return worker_main(sockfd, connect_script);
+        }else{
+            close(sockfd);
         }
     }
 }

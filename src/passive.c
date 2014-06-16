@@ -110,6 +110,8 @@ passive_main(){
                 closelog();
                 openlog("chap-proxy", LOG_PID, LOG_DAEMON);
                 return worker_passive(requestfd, sockfd);
+            }else{
+                close(requestfd);
             }
         }
     }
