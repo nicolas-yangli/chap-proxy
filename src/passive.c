@@ -112,6 +112,7 @@ passive_main(){
                 return worker_passive(requestfd, sockfd);
             }else{
                 close(requestfd);
+                close(sockfd);
             }
         }
     }
