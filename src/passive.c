@@ -75,6 +75,7 @@ passive_main(){
             }else if(pid == 0){
                 close(listenfd);
                 close(passivefd);
+                close(sockfd);
                 closelog();
                 openlog("chap-proxy", LOG_PID, LOG_DAEMON);
                 worker_main(-1, connect_script);
@@ -128,7 +129,7 @@ worker_passive(int requestfd, int passivefd){
     fd_set readset;
 
     FD_ZERO(&readset);
-    fdmaxp1 = (requestfd>passivefd? listenfd: passivefd) + 1;
+    fdmaxp1 = (requestfd>passivefd? requestfd: passivefd) + 1;
 
     syslog(LOG_NOTICE, "CHAP proxy passive worker");
 
